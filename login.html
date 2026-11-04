@@ -1,0 +1,197 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Login | ResolveFlow AI</title>
+
+<style>
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #f1f5f9;
+    color: #0f172a;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.login-card {
+    width: 100%;
+    max-width: 420px;
+    background: white;
+    padding: 40px;
+    border-radius: 18px;
+    box-shadow: 0 12px 40px rgba(15,23,42,0.08);
+}
+
+.brand {
+    font-size: 29px;
+    font-weight: 800;
+    color: #0f172a;
+    margin-bottom: 8px;
+}
+
+.brand span {
+    color: #2563eb;
+}
+
+.subtitle {
+    color: #64748b;
+    margin-bottom: 32px;
+    line-height: 1.6;
+}
+
+label {
+    display: block;
+    margin-bottom: 9px;
+    font-weight: 600;
+}
+
+input {
+    width: 100%;
+    padding: 15px;
+    margin-bottom: 22px;
+    border: 1px solid #cbd5e1;
+    border-radius: 9px;
+    font-size: 15px;
+}
+
+input:focus {
+    outline: none;
+    border-color: #2563eb;
+}
+
+button {
+    width: 100%;
+    padding: 15px;
+    border: none;
+    background: #2563eb;
+    color: white;
+    border-radius: 9px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+button:hover {
+    background: #1d4ed8;
+}
+
+button:disabled {
+    opacity: 0.6;
+    cursor: wait;
+}
+
+#error-message {
+    color: #dc2626;
+    margin-top: 18px;
+    text-align: center;
+}
+
+.footer {
+    text-align: center;
+    margin-top: 30px;
+    font-size: 13px;
+    color: #94a3b8;
+}
+</style>
+</head>
+
+<body>
+
+<div class="login-card">
+
+    <div class="brand">
+        ResolveFlow <span>AI</span>
+    </div>
+
+    <p class="subtitle">
+        Secure workspace access<br>
+        Sign in to manage customer support operations.
+    </p>
+
+    <form id="login-form">
+
+        <label for="username">Username</label>
+        <input
+            type="text"
+            id="username"
+            placeholder="Enter your username"
+            autocomplete="username"
+            required
+        >
+
+        <label for="password">Password</label>
+        <input
+            type="password"
+            id="password"
+            placeholder="Enter your password"
+            autocomplete="current-password"
+            required
+        >
+
+        <button type="submit" id="login-button">
+            Sign In
+        </button>
+
+        <p id="error-message" role="alert"></p>
+
+    </form>
+
+    <div class="footer">
+        ResolveFlow AI | Authorized Access Only
+    </div>
+
+</div>
+
+<script>
+const loginForm = document.getElementById("login-form");
+const loginButton = document.getElementById("login-button");
+const errorMessage = document.getElementById("error-message");
+
+loginForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+
+    errorMessage.textContent = "";
+    loginButton.disabled = true;
+    loginButton.textContent = "Signing in...";
+
+    try {
+        const response = await fetch("/auth/login", {
+            method: "POST",
+            credentials: "same-origin",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                username: document.getElementById("username").value,
+                password: document.getElementById("password").value
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error("Invalid username or password");
+        }
+
+        window.location.assign("/dashboard");
+
+    } catch (error) {
+        errorMessage.textContent =
+            "Unable to sign in. Check your credentials.";
+    } finally {
+        loginButton.disabled = false;
+        loginButton.textContent = "Sign In";
+    }
+});
+</script>
+
+</body>
+</html>

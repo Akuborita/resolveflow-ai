@@ -1,0 +1,1232 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ResolveFlow AI | Dashboard</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: "Segoe UI", Arial, sans-serif;
+            background: #f4f7fb;
+            color: #1e293b;
+        }
+
+        .layout {
+            display: grid;
+            grid-template-columns: 240px 1fr;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            background: #111d35;
+            color: white;
+            padding: 30px 22px;
+        }
+
+        .brand {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 55px;
+        }
+
+        .brand span {
+            color: #60a5fa;
+        }
+
+        .nav-title {
+            color: #94a3b8;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 18px;
+        }
+
+        .nav-item {
+            padding: 14px;
+            border-radius: 9px;
+            margin-bottom: 8px;
+            color: #cbd5e1;
+        }
+
+        .nav-item.active {
+            background: #2563eb;
+            color: white;
+        }
+
+        .main {
+            padding: 40px;
+            min-width: 0;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 35px;
+        }
+
+        h1 {
+            font-size: 30px;
+            margin: 0 0 8px;
+        }
+
+        .subtitle {
+            color: #64748b;
+            margin: 0;
+        }
+
+        .badge {
+            background: #dbeafe;
+            color: #1d4ed8;
+            padding: 10px 15px;
+            border-radius: 30px;
+            font-size: 13px;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card,
+        .panel {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 14px;
+            padding: 25px;
+            box-shadow: 0 3px 12px rgba(15, 23, 42, 0.03);
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: #64748b;
+        }
+
+        .stat-value {
+            font-size: 34px;
+            font-weight: 700;
+            margin-top: 15px;
+        }
+
+        .panel h2 {
+            margin-top: 0;
+            font-size: 20px;
+        }
+
+        .table-wrap {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            text-align: left;
+        }
+
+        th,
+        td {
+            padding: 16px;
+            border-bottom: 1px solid #e2e8f0;
+            font-size: 14px;
+        }
+
+        th {
+            color: #64748b;
+            font-weight: 600;
+            background: #f8fafc;
+        }
+
+        .empty {
+            text-align: center;
+            color: #64748b;
+            padding: 35px;
+        }
+
+        @media (max-width: 850px) {
+            .layout {
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar {
+                padding: 20px;
+            }
+
+            .brand {
+                margin-bottom: 20px;
+            }
+
+            .main {
+                padding: 20px;
+            }
+
+            .stats {
+                grid-template-columns: 1fr;
+            }
+
+            .header {
+                flex-wrap: wrap;
+            }
+        }
+
+        /* Ticket dropdown and button styling */
+
+        #tickets-body select {
+            width: 170px;
+            max-width: 100%;
+            padding: 10px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            background: white;
+            color: #1e293b;
+            font-size: 13px;
+            cursor: pointer;
+        }
+
+        #tickets-body button {
+            background: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        #tickets-body button:hover {
+            background: #1d4ed8;
+        }
+
+        #tickets-body button:disabled {
+            opacity: 0.6;
+            cursor: wait;
+        }
+
+        /* Ticket Details Modal */
+
+        #ticket-modal {
+            width: min(520px, 90%);
+            max-height: 85vh;
+            padding: 30px;
+            border: none;
+            border-radius: 16px;
+            background: white;
+            color: #1e293b;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+            overflow-y: auto;
+        }
+
+        #ticket-modal::backdrop {
+            background: rgba(15, 23, 42, 0.65);
+        }
+
+        #ticket-modal h2 {
+            margin-top: 0;
+            color: #0f172a;
+            font-size: 24px;
+        }
+
+        #ticket-modal p {
+            line-height: 1.7;
+            margin-bottom: 14px;
+        }
+
+        #detail-message {
+            background: #f1f5f9;
+            padding: 16px;
+            border-radius: 10px;
+            overflow-wrap: anywhere;
+            white-space: pre-wrap;
+        }
+
+        #close-ticket-modal {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 15px;
+        }
+
+        #close-ticket-modal:hover {
+            background: #1d4ed8;
+        }
+
+        /* New Support Ticket Form */
+
+        #new-ticket-panel {
+            margin-bottom: 30px;
+        }
+
+        #new-ticket-form {
+            margin-top: 25px;
+        }
+
+        #new-ticket-form label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        #new-ticket-form input,
+        #new-ticket-form textarea {
+            width: 100%;
+            padding: 14px;
+            border: 1px solid #cbd5e1;
+            border-radius: 10px;
+            background: #ffffff;
+            color: #1e293b;
+            font: inherit;
+        }
+
+        #new-ticket-form textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        #new-ticket-form input:focus,
+        #new-ticket-form textarea:focus {
+            outline: 2px solid #93c5fd;
+        }
+
+        #create-ticket-btn {
+            background: #2563eb;
+            color: white;
+            padding: 14px 24px;
+            border: none;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        #create-ticket-btn:disabled {
+            opacity: 0.55;
+            cursor: not-allowed;
+        }
+
+        #new-ticket-feedback {
+            font-size: 14px;
+            margin-top: 15px;
+        }
+
+        /* Ticket Search Styling */
+
+        .ticket-filters {
+            margin-top: 25px;
+            margin-bottom: 25px;
+        }
+
+        .ticket-filters label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #334155;
+        }
+
+        #ticket-search {
+            width: 100%;
+            padding: 14px 18px;
+            border: 1px solid #cbd5e1;
+            border-radius: 10px;
+            font-size: 14px;
+            background: white;
+            color: #1e293b;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        #ticket-search:focus {
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        #ticket-search::placeholder {
+            color: #94a3b8;
+        }
+
+        /* Priority and Status Filter Styling */
+
+        .ticket-filters select {
+            display: block;
+            width: 100%;
+            padding: 14px 18px;
+            margin-bottom: 20px;
+            border: 1px solid #cbd5e1;
+            border-radius: 10px;
+            background: white;
+            color: #1e293b;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .ticket-filters select:focus {
+            outline: none;
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        #ticket-search {
+            margin-bottom: 20px;
+        }
+
+        /* Responsive ticket cards for smaller screens */
+
+        @media (max-width: 1000px) {
+
+            .table-wrap {
+                overflow-x: visible;
+            }
+
+            .table-wrap table,
+            .table-wrap tbody {
+                display: block;
+                width: 100%;
+                min-width: 0;
+            }
+
+            .table-wrap thead {
+                display: none;
+            }
+
+            #tickets-body tr {
+                display: block;
+                background: #ffffff;
+                border: 1px solid #e2e8f0;
+                border-radius: 12px;
+                padding: 12px;
+                margin-bottom: 16px;
+            }
+
+            #tickets-body td:not([colspan]) {
+                display: grid;
+                grid-template-columns: 110px minmax(0, 1fr);
+                gap: 10px;
+                padding: 12px 8px;
+                overflow-wrap: anywhere;
+            }
+
+            #tickets-body td:not([colspan])::before {
+                font-weight: 600;
+                color: #64748b;
+            }
+
+            #tickets-body td:nth-child(1)::before {
+                content: "Ticket ID";
+            }
+
+            #tickets-body td:nth-child(2)::before {
+                content: "Customer";
+            }
+
+            #tickets-body td:nth-child(3)::before {
+                content: "Category";
+            }
+
+            #tickets-body td:nth-child(4)::before {
+                content: "Priority";
+            }
+
+            #tickets-body td:nth-child(5)::before {
+                content: "Status";
+            }
+
+            #tickets-body td:nth-child(6) {
+                display: block;
+            }
+
+            #tickets-body td:nth-child(6)::before {
+                content: "Actions";
+                display: block;
+                margin-bottom: 10px;
+            }
+
+            #tickets-body select {
+                width: 100%;
+                max-width: none !important;
+            }
+
+            #tickets-body button {
+                margin-left: 0 !important;
+                margin-top: 8px;
+            }
+        }
+    
+/* Professional Internal Ticket Notes */
+
+#ticket-notes-list {
+    margin: 20px 0 30px;
+}
+
+#ticket-notes-list p {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-left: 4px solid #2563eb;
+    border-radius: 10px;
+    padding: 16px;
+    margin-bottom: 12px;
+    font-size: 14px;
+    line-height: 1.7;
+    color: #334155;
+    overflow-wrap: anywhere;
+}
+
+#new-ticket-note {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+    min-height: 120px;
+    padding: 14px;
+    margin-top: 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 10px;
+    background: white;
+    color: #1e293b;
+    font: inherit;
+    font-size: 14px;
+    line-height: 1.6;
+    resize: vertical;
+}
+
+#new-ticket-note:focus {
+    outline: none;
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+#save-ticket-note {
+    display: block;
+    margin-top: 15px;
+    padding: 12px 24px;
+    background: #2563eb;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+#save-ticket-note:hover {
+    background: #1d4ed8;
+}
+
+#save-ticket-note:disabled {
+    opacity: 0.6;
+    cursor: wait;
+}
+
+#ticket-note-feedback {
+    margin-top: 12px;
+    font-size: 14px;
+}
+
+    </style>
+</head>
+
+
+<body>
+    <div class="layout">
+
+        <aside class="sidebar">
+            <div class="brand">
+                ResolveFlow <span>AI</span>
+            </div>
+
+            <div class="nav-title">Workspace</div>
+            <div class="nav-item active">Dashboard</div>
+            <div class="nav-item">Ticket Management</div>
+            <div class="nav-item">AI Classification</div>
+    
+
+            <div class="nav-item">Analytics</div>
+       
+<button type="button" id="logout-button" class="nav-item">
+    Logout
+</button>
+
+        </aside>
+
+        <main class="main">
+
+            <header class="header">
+                <div>
+                    <h1>Dashboard Overview</h1>
+                    <p class="subtitle">
+                        Intelligent customer support automation
+                    </p>
+                </div>
+
+                <span class="badge">Local Development</span>
+            </header>
+
+            <section class="stats">
+
+                <div class="stat-card">
+                    <div class="stat-label">Total Tickets</div>
+                    <div class="stat-value" id="total-tickets">--</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-label">High Priority</div>
+                    <div class="stat-value" id="high-priority">--</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-label">Awaiting Review</div>
+                    <div class="stat-value" id="pending-tickets">--</div>
+                </div>
+
+            </section>
+
+            <!-- Create New Support Ticket -->
+            <section class="panel" id="new-ticket-panel">
+                <h2>Create New Support Ticket</h2>
+                <p class="subtitle">
+                    Submit a complaint for AI classification
+                </p>
+
+                <form id="new-ticket-form">
+                    <p>
+                        <label for="new-customer-name">
+                            Customer Name
+                        </label>
+                        <input type="text" id="new-customer-name" placeholder="Enter customer name" required>
+                    </p>
+
+                    <p>
+                        <label for="new-customer-message">
+                            Customer Complaint
+                        </label>
+                        <textarea id="new-customer-message" rows="4" minlength="5" placeholder="Describe the issue..."
+                            required></textarea>
+                    </p>
+
+                    <button type="submit" id="create-ticket-btn" disabled>
+                        Create AI Ticket
+                    </button>
+
+                    <p id="new-ticket-feedback" role="status" aria-live="polite"></p>
+                </form>
+            </section>
+
+            <section class="panel">
+                <h2>Recent Support Tickets</h2>
+                <p class="subtitle">
+                    Customer requests processed by ResolveFlow AI
+                </p>
+
+                <!-- Search support tickets -->
+                <div class="ticket-filters">
+                    <label for="ticket-search">Search Tickets</label>
+                    <input type="search" id="ticket-search" placeholder="Search by customer, ticket ID, or category..."
+                        autocomplete="off">
+
+                    <!-- Filter by priority -->
+                    <label for="priority-filter">Priority</label>
+                    <select id="priority-filter">
+                        <option value="">All Priorities</option>
+                        <option value="High">High</option>
+                        <option value="Normal">Normal</option>
+                        <option value="Low">Low</option>
+                    </select>
+
+                    <!-- Filter by ticket status -->
+                    <label for="status-filter">Status</label>
+                    <select id="status-filter">
+                        <option value="">All Statuses</option>
+                        <option value="Awaiting Human Review">
+                            Awaiting Human Review
+                        </option>
+                        <option value="In Progress">In Progress</option>
+                        <option value="Resolved">Resolved</option>
+                    </select>
+
+                </div>
+
+                <!-- Message when no tickets match filters -->
+                <p id="no-filter-results" hidden>
+                    No tickets match your search or selected filters.
+                </p>
+
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Ticket ID</th>
+                                <th>Customer</th>
+                                <th>Category</th>
+                                <th>Priority</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+
+                        <tbody id="tickets-body">
+                            <tr>
+                                <td colspan="6" class="empty">
+                                    Waiting for database connection...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- Ticket Details Window -->
+    <dialog id="ticket-modal" aria-labelledby="ticket-modal-title">
+
+        <h2 id="ticket-modal-title">Support Ticket Details</h2>
+
+        <p>
+            <strong>Ticket ID:</strong>
+            <span id="detail-id"></span>
+        </p>
+
+        <p>
+            <strong>Customer:</strong>
+            <span id="detail-customer"></span>
+        </p>
+
+        <p>
+            <strong>Category:</strong>
+            <span id="detail-category"></span>
+        </p>
+
+        <p>
+            <strong>Priority:</strong>
+            <span id="detail-priority"></span>
+        </p>
+
+        <p>
+            <strong>Assigned Department:</strong>
+            <span id="detail-department"></span>
+        </p>
+
+        <p>
+            <strong>Status:</strong>
+            <span id="detail-status"></span>
+        </p>
+
+        <h3>Customer Complaint</h3>
+        <p id="detail-message"></p>
+
+        <!-- Internal Ticket Notes -->
+        <h3>Internal Support Notes</h3>
+
+        <div id="ticket-notes-list">
+            <p>Loading notes...</p>
+        </div>
+
+        <h3>Add Internal Note</h3>
+
+        <textarea id="new-ticket-note" rows="4" maxlength="5000"
+            placeholder="Write an internal note about this ticket..."></textarea>
+
+        <button type="button" id="save-ticket-note">
+            Save Note
+        </button>
+
+        <p id="ticket-note-feedback" role="status"></p>
+
+        <button type="button" id="close-ticket-modal">
+            Close
+        </button>
+
+    </dialog>
+
+    <script>
+
+async function getCsrfToken() {
+    const response = await fetch("/auth/csrf", {
+        method: "GET",
+        credentials: "same-origin",
+        cache: "no-store"
+    });
+
+    if (!response.ok) {
+        throw new Error("Unable to obtain CSRF token");
+    }
+
+    const data = await response.json();
+
+    if (!data.csrf_token) {
+        throw new Error("CSRF token missing");
+    }
+
+    return data.csrf_token;
+}
+
+
+        async function loadTicketNotes(ticketId) {
+            const notesList = document.getElementById("ticket-notes-list");
+
+            notesList.textContent = "Loading notes...";
+
+            document.getElementById("new-ticket-note").value = "";
+            document.getElementById("ticket-note-feedback").textContent = "";
+
+            try {
+                const response = await fetch(`/tickets/${ticketId}/notes`, {
+                    cache: "no-store",
+                    credentials: "same-origin"
+                });
+
+                if (!response.ok) {
+                    throw new Error("Failed to load notes");
+                }
+
+                const data = await response.json();
+
+                notesList.replaceChildren();
+
+                if (data.notes.length === 0) {
+                    notesList.textContent = "No internal notes yet.";
+                    return true;
+                }
+
+                data.notes.forEach(note => {
+                    const noteElement = document.createElement("p");
+
+                    noteElement.textContent =
+                        `${note.created_at}: ${note.note}`;
+
+                    notesList.appendChild(noteElement);
+                });
+                return true;
+
+            } catch (error) {
+                notesList.textContent = "Unable to load ticket notes.";
+                return false;
+            }
+        }
+
+        async function loadDashboard() {
+            const tableBody = document.getElementById("tickets-body");
+
+            try {
+                const response = await fetch("/tickets?limit=100");
+
+                if (!response.ok) {
+                    throw new Error("Failed to load tickets");
+                }
+
+                const data = await response.json();
+                const tickets = data.tickets;
+
+                // Update dashboard statistics
+                document.getElementById("total-tickets").textContent =
+                    tickets.length;
+
+                document.getElementById("high-priority").textContent =
+                    tickets.filter(t => t.priority === "High").length;
+
+                document.getElementById("pending-tickets").textContent =
+                    tickets.filter(
+                        t => t.status === "Awaiting Human Review"
+                    ).length;
+
+                // Clear the loading message
+                tableBody.replaceChildren();
+
+                if (tickets.length === 0) {
+                    const row = tableBody.insertRow();
+                    const cell = row.insertCell();
+                    cell.colSpan = 6;
+                    cell.textContent = "No tickets found.";
+                    return;
+                }
+
+                // Display each saved ticket
+
+                tickets.forEach(ticket => {
+                    const row = tableBody.insertRow();
+
+                    // Display ticket information
+                    [
+                        "#" + ticket.id,
+                        ticket.customer_name,
+                        ticket.category,
+                        ticket.priority,
+                        ticket.status
+                    ].forEach(value => {
+                        const cell = row.insertCell();
+                        cell.textContent = value;
+                    });
+
+                    // Make ticket ID clickable
+                    const ticketLink = document.createElement("a");
+
+                    ticketLink.href = `/tickets/${ticket.id}`;
+                    ticketLink.textContent = "#" + ticket.id;
+                    ticketLink.target = "_blank";
+                    ticketLink.rel = "noopener noreferrer";
+
+                    // Open ticket details inside the dashboard
+                    ticketLink.addEventListener("click", (event) => {
+                        event.preventDefault();
+
+                        const modal = document.getElementById("ticket-modal");
+
+                        document.getElementById("detail-id").textContent =
+                            "#" + ticket.id;
+
+                        document.getElementById("detail-customer").textContent =
+                            ticket.customer_name;
+
+                        document.getElementById("detail-category").textContent =
+                            ticket.category;
+
+                        document.getElementById("detail-priority").textContent =
+                            ticket.priority;
+
+                        document.getElementById("detail-department").textContent =
+                            ticket.assigned_department;
+
+                        document.getElementById("detail-status").textContent =
+                            ticket.status;
+
+                        document.getElementById("detail-message").textContent =
+                            ticket.message;
+
+                        // Open the details window
+                        modal.showModal();
+                        loadTicketNotes(ticket.id);
+
+                        // Save internal notes from the dashboard
+                        const saveNoteButton = document.getElementById("save-ticket-note");
+
+                        saveNoteButton.onclick = async () => {
+                            const noteInput = document.getElementById("new-ticket-note");
+                            const feedback = document.getElementById("ticket-note-feedback");
+                            const noteText = noteInput.value.trim();
+
+                            if (!noteText) {
+                                feedback.textContent = "Please enter a note.";
+                                feedback.style.color = "#dc2626";
+                                return;
+                            }
+
+                            saveNoteButton.disabled = true;
+                            saveNoteButton.textContent = "Saving...";
+
+                            try {
+                                const response = await fetch(
+                                    `/tickets/${ticket.id}/notes`,
+                                    {
+                                        method: "POST",
+                                        credentials: "same-origin",
+                                        headers: {
+    "Content-Type": "application/json",
+    "X-CSRF-Token": await getCsrfToken()
+},
+
+                                        body: JSON.stringify({
+                                            note: noteText
+                                        })
+                                    }
+                                );
+
+                                if (!response.ok) {
+                                    throw new Error("Unable to save note");
+                                }
+
+                                // Reload notes after successful saving
+                                const refreshed = await loadTicketNotes(ticket.id);
+
+                                feedback.textContent = refreshed
+                                    ? "Note saved successfully!"
+                                    : "Note saved, but notes could not refresh. Reopen the ticket.";
+                                feedback.style.color = "#16a34a";
+
+                            } catch (error) {
+                                feedback.textContent =
+                                    "Unable to save note. Please try again.";
+                                feedback.style.color = "#dc2626";
+
+                            } finally {
+                                saveNoteButton.disabled = false;
+                                saveNoteButton.textContent = "Save Note";
+                            }
+                        };
+
+                        // Close the details window
+                        document.getElementById("close-ticket-modal").onclick =
+                            () => modal.close();
+                    });
+
+                    // Replace plain ticket ID with clickable link
+                    row.cells[0].replaceChildren(ticketLink);
+
+                    // Create the Actions column
+                    const actionCell = row.insertCell();
+
+                    // Create status dropdown
+                    const statusSelect = document.createElement("select");
+
+                    const statuses = [
+                        "Awaiting Human Review",
+                        "In Progress",
+                        "Resolved"
+                    ];
+
+                    statuses.forEach(status => {
+                        const option = document.createElement("option");
+                        option.value = status;
+                        option.textContent = status;
+                        statusSelect.appendChild(option);
+                    });
+
+                    statusSelect.value = ticket.status;
+                    statusSelect.style.maxWidth = "170px";
+
+                    // Create Update button
+                    const updateButton = document.createElement("button");
+                    updateButton.textContent = "Update";
+                    updateButton.type = "button";
+                    updateButton.style.marginLeft = "8px";
+                    updateButton.style.padding = "8px 12px";
+                    updateButton.style.cursor = "pointer";
+
+                    // Save status when Update is clicked
+                    updateButton.addEventListener("click", async () => {
+                        updateButton.disabled = true;
+                        updateButton.textContent = "Saving...";
+
+                        try {
+                            const response = await fetch(
+                                `/tickets/${ticket.id}/status`,
+                                {
+                                    method: "PATCH",
+                                    credentials: "same-origin",
+                                    headers: {
+    "Content-Type": "application/json",
+    "X-CSRF-Token": await getCsrfToken()
+},
+
+                                    body: JSON.stringify({
+                                        status: statusSelect.value
+                                    })
+                                }
+                            );
+
+                            if (!response.ok) {
+                                throw new Error("Status update failed");
+                            }
+
+                            // Reload dashboard with updated information
+                            await loadDashboard();
+
+                        } catch (error) {
+                            alert("Unable to update ticket. Please try again.");
+                            updateButton.disabled = false;
+                            updateButton.textContent = "Update";
+                        }
+                    });
+
+                    actionCell.appendChild(statusSelect);
+                    actionCell.appendChild(updateButton);
+                });
+                applyTicketFilters();
+            } catch (error) {
+                console.error(error);
+
+                tableBody.replaceChildren();
+                const row = tableBody.insertRow();
+                const cell = row.insertCell();
+                cell.colSpan = 6;
+                cell.textContent = "Unable to load tickets.";
+            }
+        }
+
+        // Enable AI-powered ticket creation
+        const newTicketForm = document.getElementById("new-ticket-form");
+        const createButton = document.getElementById("create-ticket-btn");
+        const ticketFeedback = document.getElementById("new-ticket-feedback");
+
+        createButton.disabled = false;
+
+        newTicketForm.addEventListener("submit", async (event) => {
+            event.preventDefault();
+
+            const customerName = document.getElementById(
+                "new-customer-name"
+            ).value.trim();
+
+            const customerMessage = document.getElementById(
+                "new-customer-message"
+            ).value.trim();
+
+            if (!customerName || customerMessage.length < 5) {
+                ticketFeedback.textContent =
+                    "Please enter a name and a valid complaint.";
+                return;
+            }
+
+            createButton.disabled = true;
+            createButton.textContent = "AI Processing...";
+            ticketFeedback.textContent =
+                "Qwen3 is analyzing the complaint. Please wait.";
+            ticketFeedback.style.color = "#2563eb";
+
+            try {
+                const response = await fetch("/tickets", {
+                    method: "POST",
+                    credentials: "same-origin",
+                    headers: {
+    "Content-Type": "application/json",
+    "X-CSRF-Token": await getCsrfToken()
+},
+
+                    body: JSON.stringify({
+                        customer_name: customerName,
+                        message: customerMessage
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error("Ticket creation failed");
+                }
+
+                const ticket = await response.json();
+
+                ticketFeedback.textContent =
+                    `Ticket #${ticket.ticket_id} created successfully! ` +
+                    `Category: ${ticket.category}. ` +
+                    `Priority: ${ticket.priority}.`;
+
+                ticketFeedback.style.color = "#16a34a";
+
+                newTicketForm.reset();
+
+                await loadDashboard();
+
+            } catch (error) {
+                ticketFeedback.textContent =
+                    "Unable to create ticket. Check the backend and Ollama.";
+                ticketFeedback.style.color = "#dc2626";
+
+            } finally {
+                createButton.disabled = false;
+                createButton.textContent = "Create AI Ticket";
+            }
+        });
+
+
+        // Combined ticket search and filters
+        const ticketSearch = document.getElementById("ticket-search");
+        const priorityFilter = document.getElementById("priority-filter");
+        const statusFilter = document.getElementById("status-filter");
+
+        function applyTicketFilters() {
+            const searchText = ticketSearch.value.trim().toLowerCase();
+            const selectedPriority = priorityFilter.value;
+            const selectedStatus = statusFilter.value;
+
+            const rows = document.querySelectorAll("#tickets-body tr");
+
+            rows.forEach(row => {
+                if (row.cells.length !== 6) {
+                    return;
+                }
+
+                const ticketId = row.cells[0].textContent.toLowerCase();
+                const customer = row.cells[1].textContent.toLowerCase();
+                const category = row.cells[2].textContent.toLowerCase();
+                const priority = row.cells[3].textContent.trim();
+                const status = row.cells[4].textContent.trim();
+
+                const matchesSearch =
+                    ticketId.includes(searchText) ||
+                    customer.includes(searchText) ||
+                    category.includes(searchText);
+
+                const matchesPriority =
+                    selectedPriority === "" ||
+                    priority === selectedPriority;
+
+                const matchesStatus =
+                    selectedStatus === "" ||
+                    status === selectedStatus;
+
+                row.style.display =
+                    matchesSearch && matchesPriority && matchesStatus
+                        ? ""
+                        : "none";
+            });
+
+            // Show a message when no tickets match
+            const ticketRows = Array.from(rows).filter(
+                row => row.cells.length === 6
+            );
+
+            const hasMatches = ticketRows.some(
+                row => row.style.display !== "none"
+            );
+
+            document.getElementById("no-filter-results").hidden =
+                ticketRows.length === 0 || hasMatches;
+
+        }
+
+        // Activate all three filters
+        ticketSearch.addEventListener("input", applyTicketFilters);
+        priorityFilter.addEventListener("change", applyTicketFilters);
+        statusFilter.addEventListener("change", applyTicketFilters);
+
+
+    // Logout functionality
+    const logoutButton = document.getElementById("logout-button");
+
+    logoutButton.addEventListener("click", async () => {
+        logoutButton.disabled = true;
+        logoutButton.textContent = "Logging out...";
+
+        try {
+           
+const response = await fetch("/auth/logout", {
+    method: "POST",
+    credentials: "same-origin",
+    headers: {
+        "X-CSRF-Token": await getCsrfToken()
+    }
+});
+
+
+            if (!response.ok) {
+                throw new Error("Logout failed");
+            }
+
+            window.location.replace("/login");
+
+        } catch (error) {
+            logoutButton.disabled = false;
+            logoutButton.textContent = "Logout";
+
+            alert("Unable to log out. Please try again.");
+        }
+    });
+
+
+        // Load tickets when the dashboard opens
+        loadDashboard();
+    </script>
+</body>
+
+</html>
